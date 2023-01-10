@@ -50,7 +50,6 @@ func readFiles(path string, fileName string) {
 		} else {
 			readFile(pathFile, fileName+"\\"+archivo.Name())
 		}
-
 	}
 }
 
@@ -64,7 +63,6 @@ func readFile(path string, fileName string) {
 	msg, err := mail.ReadMessage(s)
 	if err != nil {
 		log.Println(err)
-		fmt.Println(path)
 		return
 	}
 	emailData(msg, fileName)
