@@ -128,6 +128,4 @@ func loadData(data []byte) {
 		log.Fatal(err)
 	}
 	_ = body
-	//log.("%s\n", body)
-	//fmt.Printf("%s\n", body)
 }
