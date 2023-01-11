@@ -13,13 +13,21 @@ import (
 	"time"
 )
 
-var pathDB string = "D:\\Projects\\Truora\\Proyecto\\Base Datos\\enron_mail_20110402\\enron_mail_20110402\\maildir\\baughman-d\\calendar"
+//var pathDB string = "D:\\Projects\\Truora\\Proyecto\\Base Datos\\enron_mail_20110402\\enron_mail_20110402\\maildir\\staab-t\\inbox"
 
-var zinc_server string = "http://localhost:4080"
-var zinc_uid string = "admin"
-var zinc_pwd string = "Complexpass#123"
+//var zinc_server string = "http://localhost:4080"
+//var zinc_uid string = "admin"
+//var zinc_pwd string = "Complexpass#123"
 
-var index string = "EMails"
+//var index string = "EMails-Staab"
+
+type config struct {
+	PathData     string `json:"path_data"`
+	ZincServer   string `json:"zinc_server"`
+	ZincUser     string `json:"zinc_user"`
+	ZincPassword string `json:"zinc_password"`
+	ZincIndex    string `json:"zinc_index"`
+}
 
 type eMail struct {
 	FileName   string    `json:"fileName"`
@@ -31,14 +39,29 @@ type eMail struct {
 	Body       string    `json:"body"`
 }
 
-func main() {
+var c config = config{}
 
-	fmt.Println(time.Now())
-	readFiles(pathDB, "")
-	fmt.Println(time.Now())
+func main() {
+	getConfig()
+	fmt.Printf("Start: %v\n", time.Now())
+	readDir(c.PathData, "")
+	fmt.Printf("End: %v\n", time.Now())
 }
 
-func readFiles(path string, fileName string) {
+func getConfig() {
+	// abrir archivo "configuracion.json"
+	manejadorDeArchivo, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	// decodificar el contenido del json sobre la estructura
+	err = json.Unmarshal(manejadorDeArchivo, &c)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func readDir(path string, fileName string) {
 	archivos, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +69,7 @@ func readFiles(path string, fileName string) {
 	for _, archivo := range archivos {
 		pathFile := path + "\\" + archivo.Name()
 		if archivo.IsDir() {
-			readFiles(pathFile, fileName+"\\"+archivo.Name())
+			readDir(pathFile, fileName+"\\"+archivo.Name())
 		} else {
 			readFile(pathFile, fileName+"\\"+archivo.Name())
 		}
@@ -63,6 +86,7 @@ func readFile(path string, fileName string) {
 	msg, err := mail.ReadMessage(s)
 	if err != nil {
 		log.Println(err)
+		fmt.Println(path)
 		return
 	}
 	emailData(msg, fileName)
@@ -109,13 +133,13 @@ func StreamToString(stream io.Reader) string {
 
 func loadData(data []byte) {
 	client := &http.Client{}
-	zinc_url := zinc_server + "/api/" + index + "/_doc"
+	zinc_url := c.ZincServer + "/api/" + c.ZincIndex + "/_doc"
 	request, err := http.NewRequest("POST", zinc_url, bytes.NewBuffer(data))
 	if err != nil {
 		log.Fatal(err)
 	}
 	request.Header.Add("Content-type", "application/json")
-	request.SetBasicAuth(zinc_uid, zinc_pwd)
+	request.SetBasicAuth(c.ZincUser, c.ZincPassword)
 	response, err := client.Do(request)
 	if err != nil {
 		log.Fatal(err)
