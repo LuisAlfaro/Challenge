@@ -1,7 +1,7 @@
 {
-    "path_data" : "D:\\Projects\\Truora\\Proyecto\\Base Datos\\enron_mail_20110402\\enron_mail_20110402\\maildir\\staab-t\\inbox",
+    "path_data" : "D:\\Projects\\Truora\\Proyecto\\Base Datos\\enron_mail_20110402\\enron_mail_20110402\\maildir\\baughman-d\\calendar",
     "zinc_server": "http://localhost:4080",
     "zinc_user": "admin",
     "zinc_password": "Complexpass#123",
-    "zinc_index": "EMails-Staab"
+    "zinc_index": "Prueba"
 }
