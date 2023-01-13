@@ -28,66 +28,10 @@ func main() {
 		Password: config.ZincPassword,
 	}
 	fmt.Printf("Start: %v\n", time.Now())
-	readDir(config.PathData, "")
-	fmt.Printf("End: %v\n", time.Now())
-}
-
-/*func LoadJson(jsonData string) {
-	res, err := zinc.LoadDataMulti([]byte(jsonData))
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(res))
-}*/
-
-func LoadDataBulkV2(jsonData []byte) {
-	res, err := zinc.LoadDataBulkV2(jsonData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_ = res
-	fmt.Println(string(res))
-}
-
-func LoadJsonDoc(jsonData []byte) {
-	res, err := zinc.LoadDataDoc(jsonData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_ = res
-	//fmt.Println(string(res))
-}
-
-func LoadJsonMulti(jsonData []byte) {
-	res, err := zinc.LoadDataMulti(jsonData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	_ = res
-	//fmt.Println(string(res))
-}
-
-func readDir(path string, fileName string) {
 	var arrayMessage []MailMessage
-	archivos, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, archivo := range archivos {
-		pathFile := path + "\\" + archivo.Name()
-		if archivo.IsDir() {
-			fmt.Printf("Start: %v\n", time.Now())
-			fmt.Println(fileName + "\\" + archivo.Name())
-			readDir(pathFile, fileName+"\\"+archivo.Name())
-		} else {
-			mailMessage, err := NewMailMessageFromFile(pathFile, archivo.Name())
-			if err != nil {
-				log.Println(err)
-			} else {
-				arrayMessage = append(arrayMessage, *mailMessage)
-			}
-		}
-	}
+	arrayMessage = readDir(config.PathData, "", arrayMessage)
+	fmt.Printf("End: %v\n", time.Now())
+
 	if len(arrayMessage) > 0 {
 		bulk := BulkMessage{
 			Index:   zinc.Index,
@@ -97,34 +41,50 @@ func readDir(path string, fileName string) {
 		if err != nil {
 			fmt.Printf("Error: %s", err.Error())
 		}
-		LoadDataBulkV2(jsonDataBytes)
-		/*fmt.Println(len(arrayMessage))
-		for _, mMessage := range arrayMessage {
-			jsonDataBytes, err := json.Marshal(mMessage)
-			if err != nil {
-				fmt.Printf("Error: %s", err.Error())
-			}
-			LoadJsonDoc(jsonDataBytes)
-		}*/
-
-		/*limit := 500
-		for i := 0; i < len(arrayMessage); i += limit {
-			batch := arrayMessage[i:min(i+limit, len(arrayMessage))]
-			jsonDataBytes, err := json.Marshal(batch)
-			if err != nil {
-				fmt.Printf("Error: %s", err.Error())
-			}
-			LoadJsonMulti(jsonDataBytes)
-		}*/
-
+		res, err := zinc.LoadDataBulkV2(jsonDataBytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_ = res
+		fmt.Println(string(res))
 	}
 
-	fmt.Printf("End: %v\n", time.Now())
 }
 
-func min(a, b int) int {
-	if a <= b {
-		return a
+func readDir(path string, fileName string, arrayMessage []MailMessage) []MailMessage {
+	//var arrayMessage []MailMessage
+	archivos, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return b
+	for _, archivo := range archivos {
+		pathFile := path + "\\" + archivo.Name()
+		if archivo.IsDir() {
+			arrayMessage = readDir(pathFile, fileName+"\\"+archivo.Name(), arrayMessage)
+		} else {
+			mailMessage, err := NewMailMessageFromFile(pathFile, fileName+"_"+archivo.Name())
+			if err != nil {
+				log.Println(err)
+			} else {
+				arrayMessage = append(arrayMessage, *mailMessage)
+			}
+		}
+	}
+	return arrayMessage
+	/*if len(arrayMessage) > 0 {
+		bulk := BulkMessage{
+			Index:   zinc.Index,
+			Records: arrayMessage,
+		}
+		jsonDataBytes, err := json.Marshal(bulk)
+		if err != nil {
+			fmt.Printf("Error: %s", err.Error())
+		}
+		res, err := zinc.LoadDataBulkV2(jsonDataBytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+		_ = res
+		//fmt.Println(string(res))
+	}*/
 }
