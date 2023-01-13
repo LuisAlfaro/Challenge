@@ -54,3 +54,24 @@ func (z *Zinc) LoadDataMulti(data []byte) ([]byte, error) {
 	}
 	return body, nil
 }
+
+func (z *Zinc) LoadDataBulkV2(data []byte) ([]byte, error) {
+	client := &http.Client{}
+	zinc_url := z.Server + "/api/" + z.Index + "/_bulkv2"
+	request, err := http.NewRequest("POST", zinc_url, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("Content-type", "application/json")
+	request.SetBasicAuth(z.User, z.Password)
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
