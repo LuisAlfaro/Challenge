@@ -15,7 +15,11 @@ var config Config = Config{}
 var zinc Zinc = Zinc{}
 
 func main() {
-	config, err := NewConfig("config.json")
+	FileIndexer("config.json")
+}
+
+func FileIndexer(configFileName string) {
+	config, err := NewConfig(configFileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,13 +29,10 @@ func main() {
 		User:     config.ZincUser,
 		Password: config.ZincPassword,
 	}
-	//fmt.Printf("Start: %v\n", time.Now())
-	readDir(config.PathData, "")
-	//fmt.Printf("End: %v\n", time.Now())
-
+	ReadDirectories(config.PathData, "")
 }
 
-func readDir(path string, fileName string) {
+func ReadDirectories(path string, fileName string) {
 	var arrayMessage []MailMessage
 	archivos, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -40,7 +41,7 @@ func readDir(path string, fileName string) {
 	for _, archivo := range archivos {
 		pathFile := path + "\\" + archivo.Name()
 		if archivo.IsDir() {
-			readDir(pathFile, fileName+"\\"+archivo.Name())
+			ReadDirectories(pathFile, fileName+"\\"+archivo.Name())
 		} else {
 			mailMessage, err := NewMailMessageFromFile(pathFile, fileName+"_"+archivo.Name())
 			if err != nil {
@@ -64,6 +65,5 @@ func readDir(path string, fileName string) {
 			log.Fatal(err)
 		}
 		_ = res
-		//fmt.Println(string(res))
 	}
 }

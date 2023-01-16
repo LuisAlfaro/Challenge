@@ -6,7 +6,6 @@ import (
 )
 
 type Config struct {
-	PathData     string `json:"path_data"`
 	ZincServer   string `json:"zinc_server"`
 	ZincUser     string `json:"zinc_user"`
 	ZincPassword string `json:"zinc_password"`
@@ -14,13 +13,12 @@ type Config struct {
 }
 
 func NewConfig(configFileName string) (*Config, error) {
-
-	datosArchivo, err := ioutil.ReadFile(configFileName)
+	datos, err := ioutil.ReadFile(configFileName)
 	if err != nil {
 		return nil, err
 	}
 	var c *Config
-	err = json.Unmarshal(datosArchivo, &c)
+	err = json.Unmarshal(datos, &c)
 	if err != nil {
 		return nil, err
 	}

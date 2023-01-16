@@ -1,0 +1,7 @@
+{
+    "path_data" : ".\\Test",
+    "zinc_server": "http://localhost:4080",
+    "zinc_user": "admin",
+    "zinc_password": "Complexpass#123",
+    "zinc_index": "Test"
+}
