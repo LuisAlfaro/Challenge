@@ -1,4 +1,4 @@
-module CorreosApi/api
+module EmailsApi/api
 
 go 1.19
 
