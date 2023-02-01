@@ -1,44 +1,63 @@
 package main
 
 import (
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
-var config Config = Config{}
-var zinc Zinc = Zinc{}
-
 func main() {
-	config, err := NewConfig("config,json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	zinc = Zinc{
-		Server:   config.ZincServer,
-		Index:    config.ZincIndex,
-		User:     config.ZincUser,
-		Password: config.ZincPassword,
-	}
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
+	r.Use(cors.Handler)
+
 	r.Get("/search", getSearch)
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3030", r)
 }
 
 func getSearch(w http.ResponseWriter, r *http.Request) {
-	text := r.URL.Query().Get("Text")
-	datos, err := zinc.Search(text)
+	text := r.URL.Query().Get("text")
+	var from int = 0
+	var size int = 20
+
+	fromString := r.URL.Query().Get("from")
+	if fromString != "" {
+		fromInt, err := strconv.Atoi(fromString)
+		_ = err
+		if fromInt > 0 {
+			from = fromInt
+		}
+	}
+
+	sizeString := r.URL.Query().Get("size")
+	if sizeString != "" {
+		sizeInt, err := strconv.Atoi(sizeString)
+		_ = err
+		if sizeInt > 0 {
+			size = sizeInt
+		}
+	}
+
+	//datos, err := zinc.Search(text, 0, 20)
+	datos, err := Search(text, from, size)
 	if err != nil {
 		http.Error(w, http.StatusText(422), 422)
 		return
 	}
+
 	w.Write(datos)
 
 }

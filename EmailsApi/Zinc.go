@@ -16,50 +16,30 @@ type Zinc struct {
 
 func getQuery(text string) string {
 	if text != "" {
-		return `
-			"query": {    
-				"bool": { 
-						"must": [
-							{ "match": { "body":  "` + text + `" }}
-						]
-					}
-			},	
-		`
+		return fmt.Sprintf(`
+			"search_type": "term",			
+			"query":
+			{
+				"term": "%s"
+			},`, text)
 	} else {
 		return ""
 	}
 }
 
-func getBodyQuery(text string) string {
-	return `{
-			"_source": [
-				 "subject",
-				 "to",
-				 "from",
-				 "date",
-				 "subject",
-				 "body"
-		   ],
-		   "fields": [
-			 "to",
-			 "from",
-			 "date",
-			 "subject",
-			 "body"
-		   ],
-		   "size": 20,
-		   "from": 0,` + getQuery(text) + `			
-		   "sort": [
-			 "date"
-		   ],
-		   "timeout": 0
-		}`
-
-}
-
-func (z *Zinc) Search(text string) ([]byte, error) {
-	//query := getText(text)
-	bodyQuery := getBodyQuery(text)
+func (z *Zinc) Search(text string, from int, size int) ([]byte, error) {
+	query := getQuery(text)
+	bodyQuery := fmt.Sprintf(`{        
+        %s
+        "from": %d,
+        "max_results": %d,
+        "_source": [
+			"subject",
+        	"to",
+        	"from",
+        	"date",        	
+        	"body"
+		]}`, query, from, size)
 
 	client := &http.Client{}
 	zinc_url := z.Server + "/api/" + z.Index + "/_search"
@@ -80,6 +60,6 @@ func (z *Zinc) Search(text string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(body))
+
 	return body, nil
 }
