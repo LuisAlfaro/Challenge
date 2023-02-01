@@ -28,7 +28,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(email, i) in emails" :key="i" @click="getBody(i)">
+            <tr
+              v-for="(email, i) in emails"
+              :key="i"
+              @click="getBody(i)"
+              data-modal-toggle="default-modal"
+            >
               <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                 <p class="text-gray-900 whitespace-no-wrap">
                   {{ email.subject }}
@@ -66,13 +71,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <div>
-    <!-- <ViewBody :body="body" /> -->
-    <p>
-      {{ body.value }}
-    </p>
   </div>
 </template>
 
