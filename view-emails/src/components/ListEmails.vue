@@ -72,66 +72,86 @@
       </div>
     </div>
   </div>
+  <div>
+    <ViewBody :body="body.value" :subject="subject.value" />
+  </div>
 </template>
 
-<script>
+<script setup>
 import { onMounted, computed, ref } from "vue";
 import { useStore } from "vuex";
 import ViewBody from "./ViewBody.vue";
-export default {
-  components: { ViewBody },
-  setup() {
-    const store = useStore();
 
-    const emails = computed(() => {
-      return store.state.emails;
-    });
+const store = useStore();
 
-    const fromCount = computed(() => {
-      return store.state.fromCount;
-    });
+const showModal = ref(false);
 
-    const toCount = computed(() => {
-      return store.state.toCount;
-    });
+const emails = computed(() => {
+  return store.state.emails;
+});
 
-    const total = computed(() => {
-      return store.state.total;
-    });
+const fromCount = computed(() => {
+  return store.state.fromCount;
+});
 
-    let body = ref("");
-    body.value = computed(() => {
-      if (store.state.emails.length > 0) {
-        return store.state.emails[0].body;
-      }
-    });
+const toCount = computed(() => {
+  return store.state.toCount;
+});
 
-    const prevPage = () => {
-      store.dispatch("prevPage");
-    };
+const total = computed(() => {
+  return store.state.total;
+});
 
-    const nextPage = () => {
-      store.dispatch("nextPage");
-    };
+let body = ref("");
+// body.value = computed(() => {
+//   if (store.state.emails.length > 0) {
+//     return store.state.emails[0].body;
+//   }
+// });
 
-    onMounted(() => {
-      store.dispatch("getEmails");
-    });
-
-    function getBody(index) {
-      body.value = store.state.emails[index].body;
-    }
-
-    return {
-      emails,
-      body,
-      fromCount,
-      toCount,
-      total,
-      getBody,
-      prevPage,
-      nextPage,
-    };
-  },
+let subject = ref("");
+// subject.value = computed(() => {
+//   if (store.state.emails.length > 0) {
+//     return store.state.emails[0].subject;
+//   }
+// });
+getBody(0);
+const prevPage = () => {
+  store.dispatch("prevPage");
+  getBody(0);
 };
+
+const nextPage = () => {
+  store.dispatch("nextPage");
+  getBody(0);
+};
+
+onMounted(() => {
+  store.dispatch("getEmails");
+});
+
+function getBody(index) {
+  showModal.value = true;
+  body.value = computed(() => {
+    if (store.state.emails.length > 0) {
+      return store.state.emails[index].body;
+    }
+  });
+  subject.value = computed(() => {
+    if (store.state.emails.length > 0) {
+      return store.state.emails[index].subject;
+    }
+  });
+}
+
+// return {
+//   emails,
+//   body,
+//   fromCount,
+//   toCount,
+//   total,
+//   getBody,
+//   prevPage,
+//   nextPage,
+// };
 </script>
